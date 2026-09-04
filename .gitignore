@@ -1,0 +1,22 @@
+# Notes and write-ups kept out of the repo (only README.md is published)
+*.md
+*.mp4
+!README.md
+
+# Local helper scripts and test harnesses (workbook builders, dev server, deploy check, node:test and Playwright walkthroughs)
+tools/
+tests/
+
+# Office lock files (LibreOffice / Excel) left next to opened CSVs
+.~lock.*#
+~$*
+
+# OS / editor noise
+Thumbs.db
+.DS_Store
+
+# Local conversion output, not used by the app
+assets/normalized_inventory.json
+
+# Deployed copy served by ChatGPT Sites (pushed to the sites remote, not GitHub)
+dist/

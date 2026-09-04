@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Spacio">
+  <title>Spacio</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B2330"/>
+      <stop offset="1" stop-color="#0E1219"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3FD3E8" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#3FD3E8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- tile -->
+  <rect width="64" height="64" rx="15" fill="url(#bg)"/>
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="none" stroke="#3FD3E8" stroke-opacity=".28"/>
+  <!-- warehouse corner: floor + two back walls, drawn as an open isometric room -->
+  <path d="M32 14 L48 23 L48 43 L32 52 L16 43 L16 23 Z" fill="url(#glow)" stroke="#3FD3E8" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M32 34 L32 14 M32 34 L16 43 M32 34 L48 43" fill="none" stroke="#3FD3E8" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"/>
+  <!-- the box stored inside -->
+  <path d="M32 27 L40 31.5 L32 36 L24 31.5 Z" fill="#7FE3F2"/>
+  <path d="M24 31.5 L32 36 L32 46 L24 41.5 Z" fill="#2FA9BC"/>
+  <path d="M40 31.5 L32 36 L32 46 L40 41.5 Z" fill="#3FD3E8"/>
+  <path d="M32 27 L40 31.5 L32 36 L24 31.5 Z M24 31.5 L32 36 L32 46 L24 41.5 Z M40 31.5 L32 36 L32 46 L40 41.5 Z" fill="none" stroke="#0E1219" stroke-width=".8" stroke-linejoin="round"/>
+</svg>

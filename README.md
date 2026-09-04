@@ -87,34 +87,11 @@ The live URL opens directly in a WebMCP-capable browser.
 
 **ChatGPT desktop app.** Latest desktop app, Settings, Browser, Permissions, *Enable site tools*, with model GPT-5.6 Sol or Terra. Open the live URL in the built-in browser and the address bar shows *Site tools* with the 32 tools. Attach the sample workbooks to the chat as usual.
 
-**Chrome 150+.** Enable `chrome://flags/#enable-webmcp-testing`, install the [Model Context Tool Inspector](https://chromewebstore.google.com/detail/gbpdfapgefenggkahomfgkhfehlcenpd) extension and open the live URL. The inspector chat works with pasted text, so paste the sheet contents or use the 20-SKU workbook mentioned below.
+**Chrome 150+.** Enable `chrome://flags/#enable-webmcp-testing`, install the [Model Context Tool Inspector](https://chromewebstore.google.com/detail/gbpdfapgefenggkahomfgkhfehlcenpd) extension and open the live URL. The inspector chat works with pasted text, so paste the sheet contents or use the small workbook from the sample data.
 
 The header reads "WebMCP ready · 32 tools" when the API is present and "WebMCP unavailable" otherwise. The app keeps working either way, since everything the agent can do is also reachable from the UI.
 
-### Quick start with the built-in sample
-
-> Create a picking warehouse called "Lima North", generate layout alternatives, activate the one with the most locations and tell me if it validates.
-
-> Add a 2.4 × 1.2 m dispatch dock at x 4.3, z −3.3, keeping the four racks of the Balanced layout, and validate the result.
-
-> Load the sample inventory, generate slotting plans with heavy-item level 3 and give me the one with the shortest picking route and a clean validation. Then focus rack R02 and show the outbound route for SKU BRA-100.
-
-### The real scenario: two departments, two reports
-
-The sample data ships the way it reaches a warehouse: one export per department. [assets/sample-master-logistics.xlsx](assets/sample-master-logistics.xlsx) is the article master from logistics, with 200 SKUs across shelving, fragile, refrigerated and pallet storage, sizes in cm, weights in grams or kg, fifteen spellings of four storage types, repeated headers and a notes column carrying real constraints. [assets/sample-sales-august.xlsx](assets/sample-sales-august.xlsx) is the sales export from commercial, with 12,675 August order lines, mixed date formats and a few stray SKUs. CSV twins of both are in the same folder. Then ask, in order:
-
-1. > Create a blank warehouse called Northern Distribution and open it in design mode. Here is our article master (200 SKUs, about 420 rack locations). Configure a 54 × 30 m space with an 8 × 1.6 m rack module, 5 bays, 4 levels and 3.6 m forklift aisles, shared circulation for forklifts and pedestrians. Generate layouts, keep only the balanced one (30 racks, 600 locations), rebuild it with 6 COLD STORAGE racks, 14 PALLETS and the rest PICKING, add packing and a dispatch dock, and validate the geometry.
-2. Click **Approve current version** in Design, then open **Products**.
-3. > Load the master. Give every SKU a location in a rack of its own storage category, put containers over 20 kg on levels 1 and 2 and tell me which items need a different location and why.
-4. > Use the August order lines: reclassify ABC, generate slotting strategies allowing up to 200 moves and heavy items down to level 3, and give me the best one that respects every weight rule, with its moves. Then show me the route of the top seller.
-5. Select the recommended plan and click **Approve plan**.
-6. > Read the approval state and give me the frozen move list.
-
-Expected result: a 54 × 30 m facility with 30 racks and 600 locations that validates; all 200 SKUs loaded with free reserve left once the "keep upright" constraint is applied; several slotting strategies, the compact one cutting the picking route by roughly a quarter with every heavy item on an allowed level; and after approval, `approvedByHuman: true` with the frozen move list.
-
-Behind the scenes the agent sizes the space with `facility3d_configure_space`, builds the model with rack categories through `facility3d_apply_model_patch`, validates every container with `warehouse3d_validate_inventory`, loads what fits with pinned low-level locations for heavy items (`warehouse3d_replace_inventory` with `locationId`), works the plan tools and traces the route. The manager approves the facility and the plan.
-
-For a full-scale run, [assets/sample-logistics-realistic.xlsx](assets/sample-logistics-realistic.xlsx) holds the same data at 320 SKUs and 20,391 order lines. It needs a 60 × 36 m space (49 racks, 980 locations, 15 COLD STORAGE and 15 PALLETS), and 20 pallet SKUs are rejected on purpose so the agent has to come back with a proposal for more pallet racks, the way it would in a real intake meeting. A 20-SKU variant for Chrome's inspector is [assets/sample-logistics-messy.xlsx](assets/sample-logistics-messy.xlsx).
+**Sample data.** [assets/](assets/) holds an article master and a sales export the way they leave logistics and commercial, a full-scale workbook with both sheets, and a small workbook for Chrome's inspector. Hand the article master to the agent, describe the space and the operating rules in your own words, then hand over the sales export and ask for slotting strategies to compare. Approve the facility and the plan from the page.
 
 ## Run locally
 

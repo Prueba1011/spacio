@@ -2,9 +2,9 @@
 
 **Warehouse management decisions, made by the person in charge with an AI agent working on the same model through WebMCP.**
 
-Running a warehouse is not about drawing racks. It is a stream of decisions with real consequences: where a new product line goes, which items move closer to dispatch before the season peak, whether the cold area can absorb next month's intake, what happens to the twenty pallets that no longer fit. Every one of those decisions is fed by reports that come from different areas, in different formats, and that rarely agree with each other. The warehouse manager reconciles them with experience and takes responsibility for the outcome.
+Managing a warehouse is a stream of decisions with real consequences: where a new product line goes, which items move closer to dispatch before the season peak, whether the cold area can absorb next month's intake, where twenty incoming pallets will live. Each decision draws on reports from several areas, in several formats, each telling part of the story. The warehouse manager brings them together with experience and takes responsibility for the outcome.
 
-Spacio is a browser app where that work happens. The manager keeps a 3D model of the facility, the inventory that lives in it and the slotting plans under consideration. An AI agent works on that same model through **WebMCP**: it reconciles the reports, validates every product against the physical constraints of the building, turns sales into an ABC classification, proposes slotting strategies and explains each move with numbers. What the agent can never do is approve. Approving a facility revision and approving a slotting plan are human-only checkpoints, and every agent call lands in a traceability log the manager can inspect.
+Spacio is a browser app where that work happens. The manager keeps a 3D model of the facility, the inventory that lives in it and the slotting plans under consideration. An AI agent works on that same model through **WebMCP**: it reconciles the reports, validates every product against the physical constraints of the building, turns sales into an ABC classification, proposes slotting strategies and explains each move with numbers. Approval stays with the manager. Approving a facility revision and approving a slotting plan are human checkpoints, and every agent call lands in a traceability log the manager can inspect.
 
 | | |
 | --- | --- |
@@ -16,46 +16,46 @@ Spacio is a browser app where that work happens. The manager keeps a 3D model of
 
 ## What managing a warehouse actually involves
 
-Knowing the tools is the easy part. The job is judgment applied to information that arrives fragmented.
+The job combines tool knowledge with business judgment, applied to information that arrives in pieces.
 
-**Several areas, several reports, one decision.** Logistics keeps the article master with dimensions and storage requirements. Commercial sends the sales export with order lines. Purchasing announces what is coming in and when. Quality puts items on hold. Finance asks why the rented overflow space is still being paid for. None of these reports were written for the warehouse: units differ, SKU codes are spelled differently, the columns that matter are half-filled and the real constraints live in a notes field. Before any decision can be made, someone has to reconcile all of it. Today that someone is the manager, with a spreadsheet, and it takes days.
+**Several areas, several reports, one decision.** Logistics keeps the article master with dimensions and storage requirements. Commercial sends the sales export with order lines. Purchasing announces what is coming in and when. Quality flags items on hold. Finance tracks the rented overflow space. Each report serves its own department, so units vary, SKU codes follow different conventions, key columns are partially filled and the operational constraints live in a notes field. Reconciling all of it is the first step of every decision. Today the manager does it with a spreadsheet, and it takes days.
 
-**The rules are not in any report.** That a 25 kg container never goes on level 4. That refrigerated goods never sit in ambient racks. That fragile items never go under heavy ones. That the forklift needs 3.6 m to turn and pedestrians must not cross its path. That a share of the locations must stay free for peaks. These rules come from experience, from accidents that already happened and from claims that were already paid. A good manager applies them to hundreds of SKUs at once, in their head, and still misses some.
+**The rules come from experience.** A 25 kg container belongs on the lower levels. Refrigerated goods belong in cold storage. Fragile items go above heavy ones. The forklift needs 3.6 m to turn and pedestrians need their own path. A share of the locations stays free for peaks. These rules are learned on the floor, from incidents already handled and claims already paid, and a good manager applies them to hundreds of SKUs at once.
 
-**Every decision has a cost the report does not show.** A top seller slotted at the back adds metres to every pick, every day, for months. A mixed storage area turns into write-offs. A pallet that does not fit becomes a forklift blocking an aisle. A layout approved without checking clearances is corrected after installation, at several times the price. Reslotting for the season gets postponed because recomputing it by hand is a project on its own.
+**Every decision shows up in the numbers.** A top seller slotted near dispatch saves metres on every pick, every day, for months. Segregated storage areas keep write-offs down. A pallet with a proper location keeps the aisle clear. A layout validated for clearances before installation is built once. Seasonal reslotting, when the recalculation is quick, keeps the layout aligned with demand.
 
-**Someone is accountable.** When the plan is executed, auditors, insurers and the next shift supervisor ask who decided each move and why. The manager needs to be able to answer, and today the answer is usually lost between spreadsheet versions.
+**Someone is accountable.** Once the plan is executed, auditors, insurers and the next shift supervisor ask who decided each move and why. The manager answers with the reasoning that supported the decision.
 
-This is the dynamic that makes warehouse management a natural fit for a person and an agent working together. The reconciliation, the rule checking across hundreds of items and the arithmetic of routes and capacity are exactly what an agent does well and a person does slowly. The judgment, the context the reports do not contain and the responsibility for the outcome stay with the person.
+This dynamic makes warehouse management a natural fit for a person and an agent working together. The reconciliation, the rule checking across hundreds of items and the arithmetic of routes and capacity are where an agent excels. The judgment, the context beyond the reports and the responsibility for the outcome belong to the person.
 
 ## How the work is split in Spacio
 
 | The manager | The agent, through WebMCP |
 | --- | --- |
-| Hands over the reports as they arrive: the article master from logistics, the sales export from commercial | Reconciles them: normalises units, spellings and codes, maps notes such as "keep upright" to constraints, and reports what it could not resolve |
+| Hands over the reports as they arrive: the article master from logistics, the sales export from commercial | Reconciles them: normalises units, spellings and codes, maps notes such as "keep upright" to constraints, and flags the rows that need a decision from the manager |
 | States the operating rules in plain language: heavy items on the two lower levels, cold chain in cold storage, keep the batteries where they are | Validates every container against rack geometry and storage type, pins heavy items low, locks bins, and explains each rejection with a reason code such as `STORAGE_TYPE` or `CONTAINER_TOO_LARGE` |
-| Asks for options, not answers | Turns order lines into an ABC classification, generates deterministic slotting strategies and compares them by route metres, time, number of moves, free reserve and warnings |
+| Asks for alternatives to compare | Turns order lines into an ABC classification, generates deterministic slotting strategies and compares them by route metres, time, number of moves, free reserve and warnings |
 | Questions a proposal: why this move, what happens to the top seller, show me the route | Traces pick routes to packing and dispatch, focuses the camera, reads the frozen move list and the audit trail |
-| Adjusts the facility when the data demands it: more pallet racks, a dispatch dock at the front, a wider aisle | Configures the space, patches racks, zones and docks, generates layout alternatives and validates clearance and reachability |
-| Approves the facility revision and approves the plan. Human only. | Reads the approval state and reports `approvedByHuman` truthfully |
+| Adjusts the facility when the data calls for it: more pallet racks, a dispatch dock at the front, a wider aisle | Configures the space, patches racks, zones and docks, generates layout alternatives and validates clearance and reachability |
+| Approves the facility revision and approves the plan | Reads the approval state and reports `approvedByHuman` truthfully |
 
-The business rules are encoded in the tools, not left to the prompt. `facility3d_configure_space` takes the forklift aisle width and whether pedestrians share the circulation. `warehouse3d_validate_inventory` and `warehouse3d_validate_plan` run the same geometric, reachability, reserve and weight-per-level checks the approval button runs, so the agent learns why something fails before it asks the manager. Every plan reports free reserve and can release whole racks for peaks. The Log panel records who did what, human, agent or system, with parameters, results and durations.
+The business rules are encoded in the tools. `facility3d_configure_space` takes the forklift aisle width and whether pedestrians share the circulation. `warehouse3d_validate_inventory` and `warehouse3d_validate_plan` run the same geometric, reachability, reserve and weight-per-level checks the approval button runs, so the agent learns why a proposal fails and comes back with a corrected one before asking the manager. Every plan reports free reserve and can release whole racks for peaks. The Log panel records who did what, human, agent or system, with parameters, results and durations.
 
 ## The impact on the operation
 
-Reconciling the reports and loading a validated inventory takes one conversation instead of days of spreadsheet work. Slotting strategies are compared on route metres saved, so the manager sees the effect on picking productivity before moving a single box. Weight and storage-type rules are checked on every SKU, every time, which is the difference between a rule that exists and a rule that is enforced. Reslotting can follow the season instead of being postponed. And when the plan is approved, the move list is frozen with the reasoning attached, so the answer to "who decided this and why" is in the log.
+Reconciling the reports and loading a validated inventory takes one conversation. Slotting strategies are compared on route metres saved, so the manager sees the effect on picking productivity before moving a single box. Weight and storage-type rules are checked on every SKU, every time, so every rule the manager states is a rule that is enforced. Reslotting can follow the season. When the plan is approved, the move list is frozen with the reasoning attached, so the answer to "who decided this and why" is in the log.
 
 ## Why WebMCP fits, and why it fits this hackathon
 
-The reports are unstructured and full of context only a language model can read. The building is a geometric model only the page can reason about. The decision belongs to a person. WebMCP is the piece that lets those three sit at the same table.
+The reports are unstructured and full of context that a language model reads well. The building is a geometric model that the page reasons about precisely. The decision belongs to a person. WebMCP is the piece that lets those three sit at the same table.
 
-The agent reads the workbook and the manager's intent and turns them into typed tool calls. The page holds the geometry, runs the validation and the optimisation, and returns exact numbers instead of something guessed from a screenshot of a 3D canvas. The manager keeps the buttons that carry liability: approve a design, approve a plan, apply moves, delete a project.
+The agent reads the workbook and the manager's intent and turns them into typed tool calls. The page holds the geometry, runs the validation and the optimisation, and returns exact numbers: locations, free reserve, route metres and warnings with codes. The manager keeps the buttons that carry liability: approve a design, approve a plan, apply moves, delete a project.
 
-One agent turn now replaces a reconciliation afternoon plus a dozen screens. "Here is the article master, load what fits and tell me what does not." "Reclassify with August sales and give me the best strategy with no weight warnings." The alternative, an agent typing 200 products into a form and reading numbers off a canvas, is slow, error-prone and impossible to audit.
+One agent turn now covers a reconciliation afternoon plus a dozen screens. "Here is the article master, load what fits and tell me what needs a decision." "Reclassify with August sales and give me the best strategy with no weight warnings." Every step is typed, validated and logged, so the whole exchange can be audited afterwards.
 
 ## About the author
 
-I have managed warehouse operations in several sectors, from receiving and slotting through picking, dispatch and inventory audits, and I have spent more afternoons than I would like reconciling one department's spreadsheet with another's before being able to make a decision. Every situation described above is one I have dealt with in person. Spacio is the tool I wanted on those days: a model that knows the rules, an assistant that does the reconciliation and the arithmetic, and a clear line around the decisions that stay with the person in charge.
+I have managed warehouse operations in several sectors, from receiving and slotting through picking, dispatch and inventory audits, and I have spent many afternoons reconciling one department's spreadsheet with another's before making a decision. Every situation described above is one I have dealt with in person. Spacio is the tool I wanted on those days: a model that knows the rules, an assistant that does the reconciliation and the arithmetic, and a clear line around the decisions that stay with the person in charge.
 
 ## WebMCP implementation
 

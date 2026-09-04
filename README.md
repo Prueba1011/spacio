@@ -8,7 +8,7 @@ Spacio is a browser app where that work happens. The manager keeps a 3D model of
 
 | | |
 | --- | --- |
-| **Live app** | https://spacio.abel1011.chatgpt.site (no login, no backend) |
+| **Live app** | https://spacio.abel1011.chatgpt.site (open access, runs entirely in the browser) |
 | **Source** | https://github.com/Prueba1011/spacio |
 | **License** | MIT, see [LICENSE](LICENSE) |
 | **WebMCP tools** | 32, registered with `document.modelContext.registerTool()` |
@@ -51,7 +51,7 @@ The reports are unstructured and full of context that a language model reads wel
 
 The agent reads the workbook and the manager's intent and turns them into typed tool calls. The page holds the geometry, runs the validation and the optimisation, and returns exact numbers: locations, free reserve, route metres and warnings with codes. The manager keeps the buttons that carry liability: approve a design, approve a plan, apply moves, delete a project.
 
-One agent turn now covers a reconciliation afternoon plus a dozen screens. "Here is the article master, load what fits and tell me what needs a decision." "Reclassify with August sales and give me the best strategy with no weight warnings." Every step is typed, validated and logged, so the whole exchange can be audited afterwards.
+One agent turn now covers a reconciliation afternoon plus a dozen screens. "Here is the article master, load what fits and tell me what needs a decision." "Reclassify with August sales and give me the strategy that keeps every heavy item on an allowed level." Every step is typed, validated and logged, so the whole exchange can be audited afterwards.
 
 ## About the author
 
@@ -77,34 +77,34 @@ Open the **WebMCP tools** button in the app header to browse every tool with its
 
 ## Try it with an agent
 
-No login is required. Open the live URL in a WebMCP-capable browser.
+The live URL opens directly in a WebMCP-capable browser.
 
 **ChatGPT desktop app.** Latest desktop app, Settings, Browser, Permissions, *Enable site tools*, with model GPT-5.6 Sol or Terra. Open the live URL in the built-in browser and the address bar shows *Site tools* with the 32 tools. Attach the sample workbooks to the chat as usual.
 
-**Chrome 150+.** Enable `chrome://flags/#enable-webmcp-testing`, install the [Model Context Tool Inspector](https://chromewebstore.google.com/detail/gbpdfapgefenggkahomfgkhfehlcenpd) extension and open the live URL. The inspector chat takes no attachments, so paste the sheet contents as text or use the 20-SKU workbook mentioned below.
+**Chrome 150+.** Enable `chrome://flags/#enable-webmcp-testing`, install the [Model Context Tool Inspector](https://chromewebstore.google.com/detail/gbpdfapgefenggkahomfgkhfehlcenpd) extension and open the live URL. The inspector chat works with pasted text, so paste the sheet contents or use the 20-SKU workbook mentioned below.
 
 The header reads "WebMCP ready · 32 tools" when the API is present and "WebMCP unavailable" otherwise. The app keeps working either way, since everything the agent can do is also reachable from the UI.
 
-### Quick start, no spreadsheet
+### Quick start with the built-in sample
 
 > Create a picking warehouse called "Lima North", generate layout alternatives, activate the one with the most locations and tell me if it validates.
 
 > Add a 2.4 × 1.2 m dispatch dock at x 4.3, z −3.3, keeping the four racks of the Balanced layout, and validate the result.
 
-> Load the sample inventory, generate slotting plans with heavy-item level 3 and give me the one with the shortest picking route and no warnings. Then focus rack R02 and show the outbound route for SKU BRA-100.
+> Load the sample inventory, generate slotting plans with heavy-item level 3 and give me the one with the shortest picking route and a clean validation. Then focus rack R02 and show the outbound route for SKU BRA-100.
 
 ### The real scenario: two departments, two reports
 
 The sample data ships the way it reaches a warehouse: one export per department. [assets/sample-master-logistics.xlsx](assets/sample-master-logistics.xlsx) is the article master from logistics, with 200 SKUs across shelving, fragile, refrigerated and pallet storage, sizes in cm, weights in grams or kg, fifteen spellings of four storage types, repeated headers and a notes column carrying real constraints. [assets/sample-sales-august.xlsx](assets/sample-sales-august.xlsx) is the sales export from commercial, with 12,675 August order lines, mixed date formats and a few stray SKUs. CSV twins of both are in the same folder. Then ask, in order:
 
-1. > Create a blank warehouse called Northern Distribution and open it in design mode. Here is our article master (200 SKUs, about 420 rack locations). Configure a 54 × 30 m space with an 8 × 1.6 m rack module, 5 bays, 4 levels and 3.6 m forklift aisles, shared circulation with no separate pedestrian route. Generate layouts, keep only the balanced one (30 racks, 600 locations), rebuild it with 6 COLD STORAGE racks, 14 PALLETS and the rest PICKING, add packing and a dispatch dock, and validate the geometry.
+1. > Create a blank warehouse called Northern Distribution and open it in design mode. Here is our article master (200 SKUs, about 420 rack locations). Configure a 54 × 30 m space with an 8 × 1.6 m rack module, 5 bays, 4 levels and 3.6 m forklift aisles, shared circulation for forklifts and pedestrians. Generate layouts, keep only the balanced one (30 racks, 600 locations), rebuild it with 6 COLD STORAGE racks, 14 PALLETS and the rest PICKING, add packing and a dispatch dock, and validate the geometry.
 2. Click **Approve current version** in Design, then open **Products**.
-3. > Load the master. Give every SKU a location in a rack of its own storage category, put containers over 20 kg on levels 1 and 2 and tell me what does not fit and why.
-4. > Use the August order lines: reclassify ABC, generate slotting strategies allowing up to 200 moves and heavy items down to level 3, and give me the best one with no weight warnings and its moves. Then show me the route of the top seller.
+3. > Load the master. Give every SKU a location in a rack of its own storage category, put containers over 20 kg on levels 1 and 2 and tell me which items need a different location and why.
+4. > Use the August order lines: reclassify ABC, generate slotting strategies allowing up to 200 moves and heavy items down to level 3, and give me the best one that respects every weight rule, with its moves. Then show me the route of the top seller.
 5. Select the recommended plan and click **Approve**.
 6. > Read the approval state and give me the frozen move list.
 
-Expected result: a 54 × 30 m facility with 30 racks and 600 locations that validates; all 200 SKUs loaded with free reserve left once the "keep upright" constraint is applied; several slotting strategies, the compact one cutting the picking route by roughly a quarter with zero weight warnings; and after approval, `approvedByHuman: true` with the frozen move list.
+Expected result: a 54 × 30 m facility with 30 racks and 600 locations that validates; all 200 SKUs loaded with free reserve left once the "keep upright" constraint is applied; several slotting strategies, the compact one cutting the picking route by roughly a quarter with every heavy item on an allowed level; and after approval, `approvedByHuman: true` with the frozen move list.
 
 Behind the scenes the agent sizes the space with `facility3d_configure_space`, builds the model with rack categories through `facility3d_apply_model_patch`, validates every container with `warehouse3d_validate_inventory`, loads what fits with pinned low-level locations for heavy items (`warehouse3d_replace_inventory` with `locationId`), works the plan tools and traces the route. The manager approves the facility and the plan.
 
@@ -112,7 +112,7 @@ For a full-scale run, [assets/sample-logistics-realistic.xlsx](assets/sample-log
 
 ## Run locally
 
-Serve the folder over HTTP, because ES modules do not load from `file://`:
+Serve the folder over HTTP so the ES modules load:
 
 ```
 npx serve .        # or: python -m http.server 8080 (on Windows set .mjs MIME to text/javascript)
@@ -135,7 +135,7 @@ css/, assets/, vendor/   Styles, logo and sample workbooks, Three.js
 
 ## Built with
 
-Vanilla JavaScript, Three.js and WebMCP (`document.modelContext`). No framework, no server, no build step. State persists in `localStorage`.
+Vanilla JavaScript, Three.js and WebMCP (`document.modelContext`). Plain files served as they are: open the folder over HTTP and it runs. State persists in `localStorage`.
 
 ## License
 

@@ -61,7 +61,7 @@ The manager works the way they already talk about the warehouse. They hand over 
 
 ## About the author
 
-I have managed warehouse operations in several sectors, from receiving and slotting through picking, dispatch and inventory audits, and I have spent many afternoons reconciling one department's spreadsheet with another's before making a decision. Every situation described above is one I have dealt with in person. Spacio is the tool I wanted on those days: a model that knows the rules, an assistant that does the reconciliation and the arithmetic, and a clear line around the decisions that stay with the person in charge.
+I have managed warehouse operations in several sectors, among them automotive parts and food distribution, from receiving and slotting through picking, dispatch and inventory audits, and I have spent many afternoons reconciling one department's spreadsheet with another's before making a decision. Every situation described above is one I have dealt with in person. Spacio is the tool I wanted on those days: a model that knows the rules, an assistant that does the reconciliation and the arithmetic, and a clear line around the decisions that stay with the person in charge. I built it together with my husband, a software developer: the situations come from my work, the code comes from his.
 
 ## WebMCP implementation
 

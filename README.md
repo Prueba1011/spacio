@@ -41,17 +41,23 @@ This dynamic makes warehouse management a natural fit for a person and an agent 
 
 The business rules are encoded in the tools. `facility3d_configure_space` takes the forklift aisle width and whether pedestrians share the circulation. `warehouse3d_validate_inventory` and `warehouse3d_validate_plan` run the same geometric, reachability, reserve and weight-per-level checks the approval button runs, so the agent learns why a proposal fails and comes back with a corrected one before asking the manager. Every plan reports free reserve and can release whole racks for peaks. The Log panel records who did what, human, agent or system, with parameters, results and durations.
 
-## The impact on the operation
+## Why WebMCP fits this use case
 
-Reconciling the reports and loading a validated inventory takes one conversation. Slotting strategies are compared on route metres saved, so the manager sees the effect on picking productivity before moving a single box. Weight and storage-type rules are checked on every SKU, every time, so every rule the manager states is a rule that is enforced. Reslotting can follow the season. When the plan is approved, the move list is frozen with the reasoning attached, so the answer to "who decided this and why" is in the log.
+Three kinds of reasoning meet in every slotting decision. The reports are unstructured and full of context that a language model reads well: units, spellings, notes in the margin and the manager's intent in plain language. The building is a geometric model that the page reasons about precisely: rack dimensions, aisle clearances, weight per level and distances to dispatch. The decision belongs to a person who carries the responsibility. WebMCP lets those three work on the same model. The page exposes its domain functions as typed tools, the agent calls them with what it read from the reports, and the manager sees every result in the same 3D scene they use to decide.
 
-## Why WebMCP fits, and why it fits this hackathon
+The fit is strong because the value is in the combination. The agent's reading of a workbook becomes useful the moment it can be validated against real geometry, and the page's validation becomes useful the moment someone can feed it 200 rows in one call. Each tool returns exact numbers, locations, free reserve, route metres and warnings with codes, so the agent reasons on the same figures the manager sees, and the manager can check every claim the agent makes.
 
-The reports are unstructured and full of context that a language model reads well. The building is a geometric model that the page reasons about precisely. The decision belongs to a person. WebMCP is the piece that lets those three sit at the same table.
+## A better experience for the manager
 
-The agent reads the workbook and the manager's intent and turns them into typed tool calls. The page holds the geometry, runs the validation and the optimisation, and returns exact numbers: locations, free reserve, route metres and warnings with codes. The manager keeps the buttons that carry liability: approve a design, approve a plan, apply moves, delete a project.
+The manager works the way they already talk about the warehouse. They hand over the reports as they arrive and describe the rules in their own words: heavy items on the two lower levels, cold chain in cold storage, keep the batteries where they are. The agent turns that into typed tool calls and the model updates in front of them: racks take their category, products appear in their bins, the route of the top seller draws itself to the dock. Every proposal comes back with figures and reasons, so the manager questions it, adjusts a constraint and asks again, in minutes. The buttons that carry liability stay in the interface: approve a design, approve a plan, apply moves, delete a project. Every call, human or agent, lands in the same log with parameters, results and durations, so the whole exchange can be reviewed afterwards.
 
-One agent turn now covers a reconciliation afternoon plus a dozen screens. "Here is the article master, load what fits and tell me what needs a decision." "Reclassify with August sales and give me the strategy that keeps every heavy item on an allowed level." Every step is typed, validated and logged, so the whole exchange can be audited afterwards.
+## What people and agents can now do together
+
+- Go from two departmental exports to a validated inventory in the 3D model in one conversation, with every rejected container explained by a reason code. Until now this meant days of spreadsheet reconciliation followed by manual entry.
+- Turn a month of order lines into an ABC classification and a set of slotting strategies compared on route metres, moves, free reserve and weight rules, then choose one with the numbers in view. Until now reslotting was a project that waited for a quiet week.
+- Apply the operating rules across hundreds of SKUs on every load and every plan, so a rule the manager states once is enforced every time.
+- Adjust the building from the data: when 20 pallet SKUs are short of locations, the agent proposes more pallet racks, the manager accepts, and the layout is validated for clearance before anything is built.
+- Keep a decision trail: the approved plan freezes its move list with the reasoning attached, and the log answers "who decided this and why" for auditors, insurers and the next shift.
 
 ## About the author
 

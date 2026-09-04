@@ -1,8 +1,10 @@
 # Spacio
 
-**Warehouse design and slotting in 3D, where the people who run the warehouse and an AI agent plan on the same model.**
+**Warehouse management decisions, made by the person in charge with an AI agent working on the same model through WebMCP.**
 
-Spacio is a browser-only warehouse lab built by someone who has managed warehouses for a living. A person designs a facility (perimeter, racks, aisles, accesses, docks), loads the products that live in it and compares slotting alternatives in a 3D scene. An AI agent works on that same model through **WebMCP**: it reads the facility, generates and validates layouts, cleans and loads inventory, turns sales into an ABC classification, generates slotting plans, traces pick routes and reads the approval state. What the agent can never do is approve. Approving a facility design and approving a slotting plan are human-only checkpoints, and every agent call lands in a traceability log the person can inspect.
+Running a warehouse is not about drawing racks. It is a stream of decisions with real consequences: where a new product line goes, which items move closer to dispatch before the season peak, whether the cold area can absorb next month's intake, what happens to the twenty pallets that no longer fit. Every one of those decisions is fed by reports that come from different areas, in different formats, and that rarely agree with each other. The warehouse manager reconciles them with experience and takes responsibility for the outcome.
+
+Spacio is a browser app where that work happens. The manager keeps a 3D model of the facility, the inventory that lives in it and the slotting plans under consideration. An AI agent works on that same model through **WebMCP**: it reconciles the reports, validates every product against the physical constraints of the building, turns sales into an ABC classification, proposes slotting strategies and explains each move with numbers. What the agent can never do is approve. Approving a facility revision and approving a slotting plan are human-only checkpoints, and every agent call lands in a traceability log the manager can inspect.
 
 | | |
 | --- | --- |
@@ -12,68 +14,48 @@ Spacio is a browser-only warehouse lab built by someone who has managed warehous
 | **WebMCP tools** | 32, registered with `document.modelContext.registerTool()` |
 | **Testing** | See [Try it with an agent](#try-it-with-an-agent). Sample data ships in [assets/](assets/). |
 
-## The problem, seen from the warehouse floor
+## What managing a warehouse actually involves
 
-Most small and mid-size warehouses are still planned with spreadsheets and a printed floor plan. These are the situations that come up every week, and Spacio was designed around them.
+Knowing the tools is the easy part. The job is judgment applied to information that arrives fragmented.
 
-**The article master is never clean.** Logistics keeps one sheet and commercial keeps another. Dimensions come in centimetres, weights in grams or kilos depending on who typed the row, the same storage type is spelled five different ways, and the constraints that really matter ("keep upright", "damaged box, inspect") live in a free-text notes column. Any relocation project starts with an afternoon of data cleaning.
+**Several areas, several reports, one decision.** Logistics keeps the article master with dimensions and storage requirements. Commercial sends the sales export with order lines. Purchasing announces what is coming in and when. Quality puts items on hold. Finance asks why the rented overflow space is still being paid for. None of these reports were written for the warehouse: units differ, SKU codes are spelled differently, the columns that matter are half-filled and the real constraints live in a notes field. Before any decision can be made, someone has to reconcile all of it. Today that someone is the manager, with a spreadsheet, and it takes days.
 
-**Products end up where there was space, not where they belong.** A new line arrives, the receiver puts it in the first empty bin, and six months later the top seller sits at the back of the warehouse while a dead SKU occupies the bin next to the dock.
+**The rules are not in any report.** That a 25 kg container never goes on level 4. That refrigerated goods never sit in ambient racks. That fragile items never go under heavy ones. That the forklift needs 3.6 m to turn and pedestrians must not cross its path. That a share of the locations must stay free for peaks. These rules come from experience, from accidents that already happened and from claims that were already paid. A good manager applies them to hundreds of SKUs at once, in their head, and still misses some.
 
-**Heavy boxes on the top level.** A 25 kg container on level 4 is an injury and a damaged product waiting to happen. Everybody knows the rule. Nobody has a tool that checks it across 300 SKUs.
+**Every decision has a cost the report does not show.** A top seller slotted at the back adds metres to every pick, every day, for months. A mixed storage area turns into write-offs. A pallet that does not fit becomes a forklift blocking an aisle. A layout approved without checking clearances is corrected after installation, at several times the price. Reslotting for the season gets postponed because recomputing it by hand is a project on its own.
 
-**Storage types get mixed.** Refrigerated goods in ambient racks, pallets forced into shelving, fragile items under heavy ones. Each of these turns into a claim, a write-off or an audit finding.
+**Someone is accountable.** When the plan is executed, auditors, insurers and the next shift supervisor ask who decided each move and why. The manager needs to be able to answer, and today the answer is usually lost between spreadsheet versions.
 
-**The aisle that turned out too narrow.** Racks get placed, and then the forklift cannot turn or a pedestrian route crosses forklift traffic. Fixing it after installation costs more than the racks did.
+This is the dynamic that makes warehouse management a natural fit for a person and an agent working together. The reconciliation, the rule checking across hundreds of items and the arithmetic of routes and capacity are exactly what an agent does well and a person does slowly. The judgment, the context the reports do not contain and the responsibility for the outcome stay with the person.
 
-**Reslotting never happens.** Sales change every season, but recomputing an ABC classification and a move plan by hand takes days, so the warehouse keeps last year's layout.
+## How the work is split in Spacio
 
-**"Who moved this, and why?"** Once a plan is executed, the reasons behind each move are lost. Auditors, insurers and the next shift supervisor all ask the same question, and nobody has the answer.
-
-None of these are technical problems. They are business problems that need spatial reasoning, domain rules and someone accountable for the decision. That combination is what Spacio encodes.
-
-## What running a warehouse actually requires
-
-The tools in Spacio are not generic data entry. Each one carries a rule a warehouse manager applies every day.
-
-| Business rule | Where it lives in Spacio |
+| The manager | The agent, through WebMCP |
 | --- | --- |
-| Rack module, bay count, levels and aisle width follow the handling equipment, not the other way round | `facility3d_configure_space` takes the forklift aisle width and whether pedestrians share the circulation. `facility3d_validate_layout` checks clearance and reachability. |
-| Storage types are segregated: pallets in pallet racks, cold chain in cold storage, fragile away from heavy | Rack categories (COLD STORAGE, PALLETS, PICKING) and `warehouse3d_validate_inventory`, which rejects a container with a reason code such as `STORAGE_TYPE` or `CONTAINER_TOO_LARGE`. |
-| Heavy containers stay low | Weight-per-level thresholds (`heavyWarningKg`, `heavyMaximumLevel`) in plan generation and validation, plus pinned locations when loading. |
-| Fast movers sit close to packing and dispatch | ABC classification from real order lines and distance-based slotting strategies that report the route metres saved. |
-| Reserve capacity is kept for peaks | Every plan reports free reserve and can release whole racks. |
-| Some things must not move | `warehouse3d_set_bin_lock` freezes a bin so a plan works around it. |
-| Changes are approved by a person and are auditable | Approval buttons exist only in the UI. The tools report `approvedByHuman` truthfully, and an approved plan freezes its move list. |
-| Every action can be reviewed later | The Log panel records who did what (human, agent or system) with parameters, results and durations. |
+| Hands over the reports as they arrive: the article master from logistics, the sales export from commercial | Reconciles them: normalises units, spellings and codes, maps notes such as "keep upright" to constraints, and reports what it could not resolve |
+| States the operating rules in plain language: heavy items on the two lower levels, cold chain in cold storage, keep the batteries where they are | Validates every container against rack geometry and storage type, pins heavy items low, locks bins, and explains each rejection with a reason code such as `STORAGE_TYPE` or `CONTAINER_TOO_LARGE` |
+| Asks for options, not answers | Turns order lines into an ABC classification, generates deterministic slotting strategies and compares them by route metres, time, number of moves, free reserve and warnings |
+| Questions a proposal: why this move, what happens to the top seller, show me the route | Traces pick routes to packing and dispatch, focuses the camera, reads the frozen move list and the audit trail |
+| Adjusts the facility when the data demands it: more pallet racks, a dispatch dock at the front, a wider aisle | Configures the space, patches racks, zones and docks, generates layout alternatives and validates clearance and reachability |
+| Approves the facility revision and approves the plan. Human only. | Reads the approval state and reports `approvedByHuman` truthfully |
+
+The business rules are encoded in the tools, not left to the prompt. `facility3d_configure_space` takes the forklift aisle width and whether pedestrians share the circulation. `warehouse3d_validate_inventory` and `warehouse3d_validate_plan` run the same geometric, reachability, reserve and weight-per-level checks the approval button runs, so the agent learns why something fails before it asks the manager. Every plan reports free reserve and can release whole racks for peaks. The Log panel records who did what, human, agent or system, with parameters, results and durations.
+
+## The impact on the operation
+
+Reconciling the reports and loading a validated inventory takes one conversation instead of days of spreadsheet work. Slotting strategies are compared on route metres saved, so the manager sees the effect on picking productivity before moving a single box. Weight and storage-type rules are checked on every SKU, every time, which is the difference between a rule that exists and a rule that is enforced. Reslotting can follow the season instead of being postponed. And when the plan is approved, the move list is frozen with the reasoning attached, so the answer to "who decided this and why" is in the log.
 
 ## Why WebMCP fits, and why it fits this hackathon
 
-Warehouse planning is a conversation between a spatial model and a human who is accountable for the result. Screen-scraping agents cannot reason about rack geometry, aisle widths or weight-per-level rules by looking at the pixels of a 3D canvas, and a page made of form fields cannot read a messy Excel. WebMCP puts each kind of reasoning where it belongs.
+The reports are unstructured and full of context only a language model can read. The building is a geometric model only the page can reason about. The decision belongs to a person. WebMCP is the piece that lets those three sit at the same table.
 
-The agent does what it is good at: reading an unstructured workbook, normalising units and spellings, mapping free-text notes to constraints, and turning a plain-language request ("keep the batteries where they are, put anything over 20 kg on the two lower levels") into typed tool calls.
+The agent reads the workbook and the manager's intent and turns them into typed tool calls. The page holds the geometry, runs the validation and the optimisation, and returns exact numbers instead of something guessed from a screenshot of a 3D canvas. The manager keeps the buttons that carry liability: approve a design, approve a plan, apply moves, delete a project.
 
-The page does what it is good at: holding the geometry, running the validation rules and the optimisation, and returning exact numbers (locations, free reserve, route metres, warnings with codes) instead of something guessed from a screenshot.
-
-The person keeps the decisions that carry liability: approving a design, approving a plan, applying moves, deleting projects. Those are page buttons only.
-
-One agent turn now replaces a data-cleaning afternoon plus a dozen screens. "Load this workbook." "Reclassify with August sales and give me the best strategy with no weight warnings." The alternative, an agent typing 200 products into a form and reading numbers off a canvas, is slow, error-prone and impossible to audit.
-
-## What people and agents can do together
-
-| Person | Agent (via WebMCP) |
-| --- | --- |
-| Creates a project or picks a template | Creates, lists, duplicates, archives and exports projects |
-| Shapes the space, places racks, sets aisles | Reads the facility, configures space and accesses, patches racks, zones and walls, generates and validates layouts |
-| Approves a facility revision (human only) | Reads the approval state and knows whether the active revision is approved |
-| Hands over the article master and the sales export as they are | Normalises the workbook, validates every container against rack geometry and storage type, loads what fits and explains what does not |
-| Adds constraints in plain language | Locks bins, pins heavy items low, focuses the camera on a rack, traces pick routes to the dock |
-| Compares slotting alternatives in 3D | Generates deterministic plans, validates them and compares them by distance, time, moves and warnings |
-| Approves a plan and freezes its move list (human only) | Reads the frozen move list and the audit trail |
+One agent turn now replaces a reconciliation afternoon plus a dozen screens. "Here is the article master, load what fits and tell me what does not." "Reclassify with August sales and give me the best strategy with no weight warnings." The alternative, an agent typing 200 products into a form and reading numbers off a canvas, is slow, error-prone and impossible to audit.
 
 ## About the author
 
-I have managed warehouses in several sectors, from receiving and slotting through picking, dispatch and inventory audits. Every problem listed above is one I have dealt with in person, usually armed with a spreadsheet and a printed floor plan. Spacio is the tool I wanted on those days: a model that knows the rules, an assistant that does the tedious reading and mapping, and a clear line around the decisions that stay with the person in charge.
+I have managed warehouse operations in several sectors, from receiving and slotting through picking, dispatch and inventory audits, and I have spent more afternoons than I would like reconciling one department's spreadsheet with another's before being able to make a decision. Every situation described above is one I have dealt with in person. Spacio is the tool I wanted on those days: a model that knows the rules, an assistant that does the reconciliation and the arithmetic, and a clear line around the decisions that stay with the person in charge.
 
 ## WebMCP implementation
 
@@ -111,7 +93,7 @@ The header reads "WebMCP ready · 32 tools" when the API is present and "WebMCP 
 
 > Load the sample inventory, generate slotting plans with heavy-item level 3 and give me the one with the shortest picking route and no warnings. Then focus rack R02 and show the outbound route for SKU BRA-100.
 
-### Bring the real spreadsheets
+### The real scenario: two departments, two reports
 
 The sample data ships the way it reaches a warehouse: one export per department. [assets/sample-master-logistics.xlsx](assets/sample-master-logistics.xlsx) is the article master from logistics, with 200 SKUs across shelving, fragile, refrigerated and pallet storage, sizes in cm, weights in grams or kg, fifteen spellings of four storage types, repeated headers and a notes column carrying real constraints. [assets/sample-sales-august.xlsx](assets/sample-sales-august.xlsx) is the sales export from commercial, with 12,675 August order lines, mixed date formats and a few stray SKUs. CSV twins of both are in the same folder. Then ask, in order:
 
@@ -124,9 +106,9 @@ The sample data ships the way it reaches a warehouse: one export per department.
 
 Expected result: a 54 × 30 m facility with 30 racks and 600 locations that validates; all 200 SKUs loaded with free reserve left once the "keep upright" constraint is applied; several slotting strategies, the compact one cutting the picking route by roughly a quarter with zero weight warnings; and after approval, `approvedByHuman: true` with the frozen move list.
 
-Behind the scenes the agent sizes the space with `facility3d_configure_space`, builds the model with rack categories through `facility3d_apply_model_patch`, validates every container with `warehouse3d_validate_inventory`, loads what fits with pinned low-level locations for heavy items (`warehouse3d_replace_inventory` with `locationId`), works the plan tools and traces the route. The person approves the facility and the plan.
+Behind the scenes the agent sizes the space with `facility3d_configure_space`, builds the model with rack categories through `facility3d_apply_model_patch`, validates every container with `warehouse3d_validate_inventory`, loads what fits with pinned low-level locations for heavy items (`warehouse3d_replace_inventory` with `locationId`), works the plan tools and traces the route. The manager approves the facility and the plan.
 
-For a full-scale run, [assets/sample-logistics-realistic.xlsx](assets/sample-logistics-realistic.xlsx) holds the same data at 320 SKUs and 20,391 order lines. It needs a 60 × 36 m space (49 racks, 980 locations, 15 COLD STORAGE and 15 PALLETS), and 20 pallet SKUs are rejected on purpose so the agent has to propose more pallet racks. A 20-SKU variant for Chrome's inspector is [assets/sample-logistics-messy.xlsx](assets/sample-logistics-messy.xlsx).
+For a full-scale run, [assets/sample-logistics-realistic.xlsx](assets/sample-logistics-realistic.xlsx) holds the same data at 320 SKUs and 20,391 order lines. It needs a 60 × 36 m space (49 racks, 980 locations, 15 COLD STORAGE and 15 PALLETS), and 20 pallet SKUs are rejected on purpose so the agent has to come back with a proposal for more pallet racks, the way it would in a real intake meeting. A 20-SKU variant for Chrome's inspector is [assets/sample-logistics-messy.xlsx](assets/sample-logistics-messy.xlsx).
 
 ## Run locally
 

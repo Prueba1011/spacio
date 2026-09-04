@@ -11,7 +11,7 @@ Spacio is a browser app where that work happens. The manager keeps a 3D model of
 | **Live app** | https://spacio.abel1011.chatgpt.site (open access, runs entirely in the browser) |
 | **Source** | https://github.com/Prueba1011/spacio |
 | **License** | MIT, see [LICENSE](LICENSE) |
-| **WebMCP tools** | 32, registered with `document.modelContext.registerTool()` |
+| **WebMCP tools** | 32, registered with `navigator.modelContext.registerTool()` |
 | **Testing** | See [Try it with an agent](#try-it-with-an-agent). Sample data ships in [assets/](assets/). |
 
 ## What managing a warehouse actually involves
@@ -34,7 +34,7 @@ This dynamic makes warehouse management a natural fit for a person and an agent 
 | --- | --- |
 | Hands over the reports as they arrive: the article master from logistics, the sales export from commercial | Reconciles them: normalises units, spellings and codes, maps notes such as "keep upright" to constraints, and flags the rows that need a decision from the manager |
 | States the operating rules in plain language: heavy items on the two lower levels, cold chain in cold storage, keep the batteries where they are | Validates every container against rack geometry and storage type, pins heavy items low, locks bins, and explains each rejection with a reason code such as `STORAGE_TYPE` or `CONTAINER_TOO_LARGE` |
-| Asks for alternatives to compare | Turns order lines into an ABC classification, generates deterministic slotting strategies and compares them by route metres, time, number of moves, free reserve and warnings |
+| Asks for alternatives to compare | Aggregates the order lines into picks per SKU, assigns each product its ABC class and reloads the inventory with it, then generates deterministic slotting strategies and compares them by route metres, time, number of moves, free reserve and warnings |
 | Questions a proposal: why this move, what happens to the top seller, show me the route | Traces pick routes to packing and dispatch, focuses the camera, reads the frozen move list and the audit trail |
 | Adjusts the facility when the data calls for it: more pallet racks, a dispatch dock at the front, a wider aisle | Configures the space, patches racks, zones and docks, generates layout alternatives and validates clearance and reachability |
 | Approves the facility revision and approves the plan | Reads the approval state and reports `approvedByHuman` truthfully |
@@ -65,7 +65,7 @@ I have managed warehouse operations in several sectors, among them automotive pa
 
 ## WebMCP implementation
 
-Tools are registered imperatively with `document.modelContext.registerTool()`. The page also accepts `navigator.modelContext` for older Chrome builds. Each tool declares a JSON Schema `inputSchema` with bounded numbers and enums, an `annotations.readOnlyHint` flag and an async `execute` that returns plain JSON. Inputs are validated against the schema before execution (see [js/webmcp-validation.mjs](js/webmcp-validation.mjs)), unknown parameters are rejected, and every call is wrapped so its parameters, result, duration and errors land in the in-app Log panel.
+Tools are registered imperatively with `navigator.modelContext.registerTool()`, with `document.modelContext` as the fallback. Each tool declares a JSON Schema `inputSchema` with bounded numbers and enums, an `annotations.readOnlyHint` flag and an async `execute` that returns plain JSON. Inputs are validated against the schema before execution (see [js/webmcp-validation.mjs](js/webmcp-validation.mjs)), unknown parameters are rejected, and every call is wrapped so its parameters, result, duration and errors land in the in-app Log panel.
 
 The Design mode runs in an iframe. Because agents only see tools registered on the top-level document, the main page registers proxy tools that forward to the designer's API, so all 32 tools are visible from one document.
 
@@ -79,7 +79,7 @@ Where the registration lives: [js/project-hub.js](js/project-hub.js) (project to
 
 **Products (14):** `warehouse3d_get_snapshot`, `warehouse3d_validate_inventory`, `warehouse3d_replace_inventory`, `warehouse3d_undo_inventory_change`, `warehouse3d_generate_plans`, `warehouse3d_activate_plan`, `warehouse3d_validate_plan`, `warehouse3d_compare_plans`, `warehouse3d_get_move_list`, `warehouse3d_get_approval_state`, `warehouse3d_focus_rack`, `warehouse3d_set_bin_lock`, `warehouse3d_show_product_pick_route`, `warehouse3d_set_product_highlight`.
 
-Open the **WebMCP tools** button in the app header to browse every tool with its schema, or the **Log** button to see what the agent did.
+Click the WebMCP status in the app header (it reads "WebMCP ready · 32 tools") to browse every tool with its schema, or the **Log** button to see what the agent did.
 
 ## Try it with an agent
 
@@ -107,7 +107,7 @@ The sample data ships the way it reaches a warehouse: one export per department.
 2. Click **Approve current version** in Design, then open **Products**.
 3. > Load the master. Give every SKU a location in a rack of its own storage category, put containers over 20 kg on levels 1 and 2 and tell me which items need a different location and why.
 4. > Use the August order lines: reclassify ABC, generate slotting strategies allowing up to 200 moves and heavy items down to level 3, and give me the best one that respects every weight rule, with its moves. Then show me the route of the top seller.
-5. Select the recommended plan and click **Approve**.
+5. Select the recommended plan and click **Approve plan**.
 6. > Read the approval state and give me the frozen move list.
 
 Expected result: a 54 × 30 m facility with 30 racks and 600 locations that validates; all 200 SKUs loaded with free reserve left once the "keep upright" constraint is applied; several slotting strategies, the compact one cutting the picking route by roughly a quarter with every heavy item on an allowed level; and after approval, `approvedByHuman: true` with the frozen move list.
@@ -141,7 +141,7 @@ css/, assets/, vendor/   Styles, logo and sample workbooks, Three.js
 
 ## Built with
 
-Vanilla JavaScript, Three.js and WebMCP (`document.modelContext`). Plain files served as they are: open the folder over HTTP and it runs. State persists in `localStorage`.
+Vanilla JavaScript, Three.js and WebMCP (`navigator.modelContext`). Plain files served as they are: open the folder over HTTP and it runs. State persists in `localStorage`.
 
 ## License
 
